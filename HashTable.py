@@ -1,6 +1,4 @@
-
-
-class HashTable:
+class PackageTable:
 
     def __init__(self, size=40):
         self.table = []
@@ -13,16 +11,16 @@ class HashTable:
         bucket_list.append(item)
 
     def search(self, key):
-        bucket = hash(key) - 1
+        bucket = key - 1
         bucket_list = self.table[bucket]
-        if key in bucket_list:
-            item_index = bucket_list.index(key)
-            return bucket_list[item_index]
-        else:
-            return None
+        for item in bucket_list:
+            if hash(item) == key:
+                return item
+        return None
 
     def remove(self, key):
-        bucket = hash(key) - 1
+        bucket = key - 1
         bucket_list = self.table[bucket]
-        if key in bucket_list:
-            bucket_list.remove(key)
+        for item in bucket_list:
+            if hash(item) == key:
+                bucket_list.remove(key)

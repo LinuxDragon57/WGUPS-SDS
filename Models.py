@@ -1,6 +1,8 @@
 from datetime import datetime, time
 from enum import Enum
 
+from run import determine_distance
+
 
 class Package:
 
@@ -22,7 +24,7 @@ class Package:
         if deadline == 'EOD':
             due = time(23, 59)
         else:
-            due = datetime.strptime(deadline, "%h:%M %p")
+            due = datetime.strptime(deadline, "%I:%M %p").time()
         self.deadline = datetime.combine(datetime.today().date(), due)
         self.mass: int = int(mass)
         self.notes: str = notes
@@ -31,7 +33,10 @@ class Package:
         return self.package_id
 
     def __repr__(self):
-        return f"<Package: {self.package_id}>"
+        return f"Package: {self.package_id}"
+
+    def match_id(self, package_id) -> bool:
+        return self.package_id == package_id
 
     def set_status(self):
         self.delivery_status = self.Status(self.delivery_status.value+1)
@@ -39,5 +44,20 @@ class Package:
 
 class Truck:
 
-    def __init__(self):
-        loaded_packages: list[Package] = [Package()]*16
+    def __init__(self, truck_number: int):
+        self.truck_number = truck_number
+        self.loaded_packages: list[Package] = []
+        self.route_number: int = 1
+
+    def determine_next_delivery(self, current_location: str) -> Package:
+        min_distance = None
+        for package in self.loaded_packages:
+            distance = determine_distance(current_location, package.address)
+            if min_distance is None or distance < min_distance:
+                min_distance = distance
+                next_delivery: Package = package
+        # noinspection PyUnboundLocalVariable
+        return next_delivery
+
+    def load_truck_packages(self):
+        pass
