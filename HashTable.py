@@ -1,7 +1,8 @@
-class PackageTable:
+class HashTable:
 
     def __init__(self, size=40):
         self.table = []
+        self.size: size = size
         for index in range(size):
             self.table.append([])
 
@@ -16,7 +17,6 @@ class PackageTable:
         for item in bucket_list:
             if hash(item) == key:
                 return item
-        return None
 
     def remove(self, key):
         bucket = key - 1
@@ -24,3 +24,5 @@ class PackageTable:
         for item in bucket_list:
             if hash(item) == key:
                 bucket_list.remove(key)
+                self.table.remove(bucket)
+                self.size = len(self.table)

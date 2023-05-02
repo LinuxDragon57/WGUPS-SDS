@@ -1,11 +1,11 @@
 import csv
 
-from HashTable import PackageTable
+from HashTable import HashTable
 from Models import Package
 
 
-def get_packages() -> PackageTable:
-    package_list: PackageTable = PackageTable()
+def get_packages() -> HashTable:
+    package_list: HashTable = HashTable()
     with open('./static/packages.csv', newline='') as csvfile:
         package_reader = csv.DictReader(csvfile, dialect='unix')
         for row in package_reader:

@@ -1,4 +1,6 @@
 
+from data import get_packages
+
 
 def main():
-    pass
+    package_table = get_packages()

@@ -2,6 +2,7 @@ from datetime import datetime, time
 from enum import Enum
 
 from run import determine_distance
+from HashTable import HashTable
 
 
 class Package:
@@ -46,7 +47,7 @@ class Truck:
 
     def __init__(self, truck_number: int):
         self.truck_number = truck_number
-        self.loaded_packages: list[Package] = []
+        self.loaded_packages: list[Package] = list()
         self.route_number: int = 1
 
     def determine_next_delivery(self, current_location: str) -> Package:
@@ -59,5 +60,12 @@ class Truck:
         # noinspection PyUnboundLocalVariable
         return next_delivery
 
-    def load_truck_packages(self):
+    def load_package(self, package: Package) -> bool:
+        if len(self.loaded_packages) <= 16:
+            self.loaded_packages.append(package)
+            return True
+        else:
+            return False
+
+    def load_packages(self, package_table: HashTable):
         pass
