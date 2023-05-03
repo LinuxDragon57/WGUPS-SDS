@@ -1,7 +1,7 @@
 import csv
 
 from HashTable import HashTable
-from Models import Package
+from Package import Package
 
 
 def get_packages() -> HashTable:

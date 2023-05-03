@@ -1,9 +1,7 @@
 import sys
 
-from HashTable import HashTable
 from data import get_addresses
 from data import get_distances
-from Models import Package
 
 
 def determine_distance(address1: str, address2: str) -> float:
@@ -19,16 +17,3 @@ def determine_distance(address1: str, address2: str) -> float:
             return distance_table[coordinate1][coordinate2]
         elif distance_table[coordinate2][coordinate1] != '':
             return distance_table[coordinate2][coordinate1]
-
-
-def load_packages(package_table: HashTable):
-    min_distance = None
-    current_location: str = ""
-    for key in range(package_table.size):
-        package: Package = package_table.search(key)
-        distance = determine_distance(current_location, package.address)
-        if min_distance is None or distance < min_distance:
-            min_distance = distance
-            next_delivery: Package = package
-    # noinspection PyUnboundLocalVariable
-    return next_delivery

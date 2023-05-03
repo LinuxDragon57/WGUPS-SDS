@@ -1,9 +1,6 @@
 from datetime import datetime, time
 from enum import Enum
 
-from run import determine_distance
-from HashTable import HashTable
-
 
 class Package:
 
@@ -41,31 +38,3 @@ class Package:
 
     def set_status(self):
         self.delivery_status = self.Status(self.delivery_status.value+1)
-
-
-class Truck:
-
-    def __init__(self, truck_number: int):
-        self.truck_number = truck_number
-        self.loaded_packages: list[Package] = list()
-        self.route_number: int = 1
-
-    def determine_next_delivery(self, current_location: str) -> Package:
-        min_distance = None
-        for package in self.loaded_packages:
-            distance = determine_distance(current_location, package.address)
-            if min_distance is None or distance < min_distance:
-                min_distance = distance
-                next_delivery: Package = package
-        # noinspection PyUnboundLocalVariable
-        return next_delivery
-
-    def load_package(self, package: Package) -> bool:
-        if len(self.loaded_packages) <= 16:
-            self.loaded_packages.append(package)
-            return True
-        else:
-            return False
-
-    def load_packages(self, package_table: HashTable):
-        pass
