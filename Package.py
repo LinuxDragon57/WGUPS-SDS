@@ -6,9 +6,10 @@ class Package:
 
     class Status(Enum):
         WAITING = 1
-        MOVING = 2
-        DELIVERED = 3
-        LOST = 4
+        LOADED = 2
+        MOVING = 3
+        DELIVERED = 4
+        LOST = 5
 
     delivery_status: Status = Status.WAITING
 
