@@ -23,6 +23,6 @@ class HashTable:
         bucket_list = self.table[bucket]
         for item in bucket_list:
             if hash(item) == key:
-                bucket_list.remove(key)
-                self.table.remove(bucket)
-                self.size = len(self.table)
+                bucket_list.remove(item)
+                # self.table.pop(bucket)
+                # self.size = len(self.table)

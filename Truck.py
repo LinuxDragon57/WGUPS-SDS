@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timedelta
 
 from Package import Package
 from run import determine_distance
@@ -27,14 +28,11 @@ class Truck:
                       keys: list[str] = None):
 
         def can_load() -> bool:
-            if not any(notes_list.match(package.notes)):
-                return True
-            elif notes_list[0].match(package.notes):
+            if notes_list[0].match(package.notes):
                 truck_number: int = int(re.search(r'\d+', package.notes).group())
                 if truck_number == self.truck_number:
                     return True
             elif notes_list[1].match(package.notes) or notes_list[2].match(package.notes):
-                # Placeholder conditional. Checking against time would be better.
                 if self.route_number > 1:
                     return True
             elif notes_list[3].match(package.notes):
@@ -47,7 +45,8 @@ class Truck:
                 if len(self.loaded_packages) <= 16 - (len(packages)+1):
                     return True
             else:
-                return False
+                return True
+            return False
 
         def load_package():
             if package is not None and can_load():
@@ -63,9 +62,9 @@ class Truck:
                 else:
                     self.load_packages(package_table, package.address)
 
-        if not any(keys):
+        if keys is None:
             min_distance = None
-            for key in range(package_table.size):
+            for key in range(1, package_table.size+1):
                 package: Package = package_table.search(key)
                 distance = determine_distance(current_location, package.address)
                 if min_distance is None or distance < min_distance:
@@ -74,9 +73,27 @@ class Truck:
             continue_loading()
         else:
             for key in keys:
-                package: Package = package_table.search(int(key))
-                load_package()
+                package = package_table.search(int(key))
+                if package is not None:
+                    load_package()
             continue_loading()
 
-    def deliver_packages(self):
-        pass
+    def deliver_packages(self, time_elapsed: datetime, current_location: str = '4001 South 700 East',
+                         total_distance: float = 0):
+        if len(self.loaded_packages) > 0:
+            package: Package = self.determine_next_delivery(current_location)
+            distance: float = determine_distance(current_location, package.address)
+            total_distance += distance
+            delivery_time = distance / 18
+            time_elapsed += timedelta(hours=delivery_time)
+            package.set_status()
+            self.deliver_packages(time_elapsed, package.address, total_distance)
+        else:
+            distance: float = determine_distance(current_location, '4001 South 700 East')
+            total_distance += distance
+            delivery_time = distance / 18
+            time_elapsed += timedelta(hours=delivery_time)
+            self.route_number += 1
+            return total_distance, time_elapsed
+
+
