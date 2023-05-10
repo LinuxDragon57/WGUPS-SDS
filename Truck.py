@@ -15,37 +15,30 @@ class Truck:
         self.route_number: int = 1
 
     def determine_next_delivery(self, current_location: str) -> Package:
-        min_distance = None
+        min_distance: float = -1
+        next_delivery: Package = Package()
         for package in self.loaded_packages:
-            distance = determine_distance(current_location, package.address)
-            if min_distance is None or distance < min_distance:
+            distance: float = determine_distance(current_location, package.address)
+            if min_distance < 0 or distance < min_distance:
                 min_distance = distance
-                next_delivery: Package = package
-        # noinspection PyUnboundLocalVariable
+                next_delivery = package
         return next_delivery
 
     def load_packages(self, package_table: HashTable, current_location: str = '4001 South 700 East',
                       keys: list[str] = None):
+        package: Package = Package()
 
         def can_load() -> bool:
-            if notes_list[0].match(package.notes):
+            # Return False unless the package passes all checks.
+            if package.notes == '' or notes_list[3].match(package.notes):
+                return True
+            elif notes_list[0].match(package.notes):
                 truck_number: int = int(re.search(r'\d+', package.notes).group())
                 if truck_number == self.truck_number:
                     return True
             elif notes_list[1].match(package.notes) or notes_list[2].match(package.notes):
                 if self.route_number > 1:
                     return True
-            elif notes_list[3].match(package.notes):
-                packages = re.search(r'[\d+, ]+', package.notes).group().split(', ')
-                for package_id in packages:
-                    for loaded_package in self.loaded_packages:
-                        if loaded_package.match_id(int(package_id)):
-                            packages.remove(package_id)
-                # May not work if one of the packages is already loaded.
-                if len(self.loaded_packages) <= 16 - (len(packages)+1):
-                    return True
-            else:
-                return True
             return False
 
         def load_package():
@@ -54,29 +47,28 @@ class Truck:
                 package.set_status()
                 package_table.remove(key)
 
-        def continue_loading():
-            if len(self.loaded_packages) <= 16 and package is not None:
-                if notes_list[3].match(package.notes):
-                    packages = re.search(r'[\d+, ]+', package.notes).group().split(', ')
-                    self.load_packages(package_table, package.address, packages)
-                else:
-                    self.load_packages(package_table, package.address)
-
         if keys is None:
-            min_distance = None
+            min_distance: float = -1
             for key in range(1, package_table.size+1):
                 package: Package = package_table.search(key)
-                distance = determine_distance(current_location, package.address)
-                if min_distance is None or distance < min_distance:
+                distance: float = determine_distance(current_location, package.address)
+                if (min_distance < 0 or distance < min_distance) and package.package_id is not None:
                     min_distance = distance
                     load_package()
-            continue_loading()
         else:
             for key in keys:
-                package = package_table.search(int(key))
-                if package is not None:
+                for loaded_package in self.loaded_packages:
+                    if not loaded_package.match_id(int(key)):
+                        package = package_table.search(int(key))
+                if package.package_id is not None:
                     load_package()
-            continue_loading()
+
+        if len(self.loaded_packages) <= 16 and package.package_id is not None:
+            if notes_list[3].match(package.notes):
+                package_keys = re.search(r'[\d+, ]+', package.notes).group().split(', ')
+                self.load_packages(package_table=package_table, current_location=package.address, keys=package_keys)
+            else:
+                self.load_packages(package_table=package_table, current_location=package.address)
 
     def deliver_packages(self, time_elapsed: datetime, current_location: str = '4001 South 700 East',
                          total_distance: float = 0):
@@ -95,5 +87,3 @@ class Truck:
             time_elapsed += timedelta(hours=delivery_time)
             self.route_number += 1
             return total_distance, time_elapsed
-
-
