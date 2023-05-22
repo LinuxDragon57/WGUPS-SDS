@@ -31,7 +31,7 @@ class Package:
         return self.package_id
 
     def __repr__(self):
-        return f"Package: {self.package_id}"
+        return f"<Package {self.package_id}>"
 
     def match_id(self, package_id) -> bool:
         return self.package_id == package_id

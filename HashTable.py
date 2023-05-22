@@ -11,18 +11,16 @@ class HashTable:
         bucket_list = self.table[bucket]
         bucket_list.append(item)
 
-    def search(self, key):
+    def search(self, key: int):
         bucket = key - 1
         bucket_list = self.table[bucket]
         for item in bucket_list:
             if hash(item) == key:
                 return item
 
-    def remove(self, key):
+    def remove(self, key: int):
         bucket = key - 1
         bucket_list = self.table[bucket]
         for item in bucket_list:
             if hash(item) == key:
                 bucket_list.remove(item)
-                # self.table.pop(bucket)
-                # self.size = len(self.table)

@@ -26,22 +26,28 @@ class Truck:
 
     def load_packages(self, package_table: HashTable):
 
-        def get_related_packages(current_package: Package, unchecked_keys=None, all_keys=None) -> list[Package]:
-            if all_keys is None:
-                all_keys = list()
+        def get_related_packages(package: Package, unchecked_keys=None, packages=None) -> list[Package]:
             if unchecked_keys is None:
                 unchecked_keys = list()
+            if packages is None:
+                packages = list()
 
-            all_keys.append(current_package)
-            unchecked_keys += list(map(int, re.findall(r'\d+', current_package.address)))
+            packages.append(package)
+            unchecked_keys += list(map(int, re.findall(r'\d+', package.notes)))
+            unchecked_keys = [*set(unchecked_keys)]
+            for checked_package in packages:
+                if checked_package.package_id in unchecked_keys:
+                    unchecked_keys.remove(checked_package.package_id)
             if len(unchecked_keys) == 0:
-                return all_keys
+                return packages
             else:
                 next_package: Package = package_table.search(unchecked_keys.pop(0))
-                return get_related_packages(next_package, all_keys)
+                return get_related_packages(next_package, unchecked_keys, packages)
 
         def can_load(package: Package) -> bool:
             # Return False unless the package passes all checks.
+            if package in self.loaded_packages:
+                return False
             if package.notes == '':
                 return True
             elif notes_list[0].match(package.notes):
@@ -57,43 +63,40 @@ class Truck:
                     return True
             return False
 
-        def load_package(package: Package, key: int):
-            if package is not None and can_load(package):
-                self.loaded_packages.append(package)
-                package.set_status()
-                package_table.remove(key)
-
         def load_nearest_packages(current_location: str):
             min_distance: float = -1
-            for key in range(1, package_table.size):
+            for key in range(1, package_table.size+1):
                 package: Package = package_table.search(key)
                 distance: float = determine_distance(current_location, package.address)
                 if (min_distance < 0 or distance < min_distance) and package.package_id is not None:
                     min_distance = distance
-                    nearest_key: int = key
                     nearest_package: Package = package
             # noinspection PyUnboundLocalVariable
-            load_package(nearest_package, nearest_key)
+            if can_load(nearest_package):
+                self.loaded_packages.append(nearest_package)
+                nearest_package.set_status()
+                package_table.remove(nearest_package.package_id)
             return nearest_package
 
         def load_related_packages(package: Package):
-            packages = get_related_packages(package)
-            for package in packages:
-                load_package(package, package.package_id)
+            related_packages = get_related_packages(package)
+            for package in related_packages:
+                self.loaded_packages.append(package)
+                package.set_status()
+                package_table.remove(package.package_id)
             return package
 
-        def __init__(package: Package = None, current_location: str = '4001 South 700 East'):
-            if len(self.loaded_packages) == 0:
-                package = load_nearest_packages(current_location)
-            elif 0 < len(self.loaded_packages) < 16 and package is not None:
-                if notes_list[3].match(package.notes):
+        def main():
+            current_location: str = '4001 South 700 East'
+            package = None
+            while len(self.loaded_packages) < 16:
+                if package is not None and notes_list[3].match(package.notes):
                     package = load_related_packages(package)
                 else:
                     package = load_nearest_packages(current_location)
-            if package is not None:
-                __init__(package=package, current_location=package.address)
+                current_location = package.address
 
-        __init__()
+        main()
 
     def deliver_packages(self, time_elapsed: datetime, current_location: str = '4001 South 700 East',
                          total_distance: float = 0):
