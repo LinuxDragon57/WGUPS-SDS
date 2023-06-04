@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from Package import Package
 from run import determine_distance
@@ -11,17 +11,19 @@ class Truck:
 
     def __init__(self, truck_number: int):
         self.truck_number = truck_number
-        self.loaded_packages: list[Package] = list()
+        self.payload: list[Package] = list()
         self.route_number: int = 1
+        self.total_distance: float = 0
+        self.time_elapsed: timedelta = timedelta()
 
     def determine_next_delivery(self, current_location: str) -> Package:
         min_distance: float = -1
-        for package in self.loaded_packages:
+        next_delivery = None
+        for package in self.payload:
             distance: float = determine_distance(current_location, package.address)
             if min_distance < 0 or distance < min_distance:
                 min_distance = distance
-                next_delivery: Package = package
-        # noinspection PyUnboundLocalVariable
+                next_delivery = package
         return next_delivery
 
     def load_packages(self, package_table: HashTable):
@@ -46,7 +48,7 @@ class Truck:
 
         def can_load(package: Package) -> bool:
             # Return False unless the package passes all checks.
-            if package in self.loaded_packages:
+            if package in self.payload:
                 return False
             if package.notes == '':
                 return True
@@ -59,59 +61,76 @@ class Truck:
                     return True
             elif notes_list[3].match(package.notes):
                 packages = get_related_packages(package)
-                if len(self.loaded_packages) <= (16 - len(packages)):
+                if len(self.payload) <= (16 - len(packages)):
                     return True
             return False
 
-        def load_nearest_packages(current_location: str):
-            min_distance: float = -1
-            for key in range(1, package_table.size+1):
-                package: Package = package_table.search(key)
-                distance: float = determine_distance(current_location, package.address)
-                if (min_distance < 0 or distance < min_distance) and package.package_id is not None:
-                    min_distance = distance
-                    nearest_package: Package = package
-            # noinspection PyUnboundLocalVariable
-            if can_load(nearest_package):
-                self.loaded_packages.append(nearest_package)
-                nearest_package.set_status()
-                package_table.remove(nearest_package.package_id)
-            return nearest_package
+        def load_package(package: Package):
+            self.payload.append(package)
+            package.set_status()
+            package_table.remove(package.package_id)
 
-        def load_related_packages(package: Package):
-            related_packages = get_related_packages(package)
+        def load_related_packages(package: Package) -> Package:
+            related_packages: list[Package] = get_related_packages(package)
             for package in related_packages:
-                self.loaded_packages.append(package)
-                package.set_status()
-                package_table.remove(package.package_id)
+                load_package(package)
             return package
 
-        def main():
-            current_location: str = '4001 South 700 East'
-            package = None
-            while len(self.loaded_packages) < 16:
-                if package is not None and notes_list[3].match(package.notes):
-                    package = load_related_packages(package)
+        def load_nearest_package(current_location: str, not_loadable: list[Package]) -> tuple[str, list[Package]]:
+            min_distance: float = -1
+            nearest_package = None
+            for key in range(1, package_table.size + 1):
+                package: Package = package_table.search(key)
+                if package is not None:
+                    distance: float = determine_distance(current_location, package.address)
+                    if distance != 0 and (min_distance < 0 or distance < min_distance):
+                        min_distance = distance
+                        nearest_package = package
+            if nearest_package is not None:
+                loadable: bool = can_load(nearest_package)
+                if loadable and not notes_list[3].match(nearest_package.notes):
+                    load_package(nearest_package)
+                elif loadable and notes_list[3].match(nearest_package.notes):
+                    nearest_package = load_related_packages(nearest_package)
+                elif not loadable:
+                    not_loadable.append(nearest_package)
+                    package_table.remove(nearest_package.package_id)
+
+            return nearest_package.address, not_loadable
+
+        def execute():
+            current_location: str = "4001 South 700 East"
+            not_loadable: list[Package] = list()
+            while True:
+                load_size: int = len(self.payload)
+                if load_size == 16 or package_table.is_empty():
+                    for package in not_loadable:
+                        package_table.insert(package)
+                    break
                 else:
-                    package = load_nearest_packages(current_location)
-                current_location = package.address
+                    current_location, not_loadable = load_nearest_package(current_location, not_loadable)
 
-        main()
+        execute()
 
-    def deliver_packages(self, time_elapsed: datetime, current_location: str = '4001 South 700 East',
-                         total_distance: float = 0):
-        if len(self.loaded_packages) > 0:
+    def deliver_packages(self, delivered_packages: HashTable) -> HashTable:
+        current_location: str = "4001 South 700 East"
+        while True:
             package: Package = self.determine_next_delivery(current_location)
-            distance: float = determine_distance(current_location, package.address)
-            total_distance += distance
-            delivery_time = distance / 18
-            time_elapsed += timedelta(hours=delivery_time)
-            package.set_status()
-            self.deliver_packages(time_elapsed, package.address, total_distance)
-        else:
-            distance: float = determine_distance(current_location, '4001 South 700 East')
-            total_distance += distance
-            delivery_time = distance / 18
-            time_elapsed += timedelta(hours=delivery_time)
-            self.route_number += 1
-            return total_distance, time_elapsed
+            if package is not None:
+                distance: float = determine_distance(current_location, package.address)
+                self.total_distance += distance
+                delivery_time = distance / 18
+                self.time_elapsed += timedelta(hours=delivery_time)
+                package.set_delivery_time(self.time_elapsed)
+                package.set_status()
+                current_location = package.address
+                delivered_packages.insert(package)
+                self.payload.remove(package)
+            if len(self.payload) == 0:
+                break
+        distance: float = determine_distance(current_location, '4001 South 700 East')
+        self.total_distance += distance
+        delivery_time = distance / 18
+        self.time_elapsed += timedelta(hours=delivery_time)
+        self.route_number += 1
+        return delivered_packages

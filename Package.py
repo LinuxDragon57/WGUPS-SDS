@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from enum import Enum
 
 
@@ -26,6 +26,7 @@ class Package:
         self.deadline = datetime.combine(datetime.today().date(), due)
         self.mass: int = int(mass)
         self.notes: str = notes
+        self.delivery_time = None
 
     def __hash__(self):
         return self.package_id
@@ -38,3 +39,6 @@ class Package:
 
     def set_status(self):
         self.delivery_status = self.Status(self.delivery_status.value+1)
+
+    def set_delivery_time(self, delivery_time: timedelta):
+        self.delivery_time = delivery_time

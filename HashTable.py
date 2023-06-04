@@ -24,3 +24,9 @@ class HashTable:
         for item in bucket_list:
             if hash(item) == key:
                 bucket_list.remove(item)
+
+    def is_empty(self) -> bool:
+        return not any(self.table)
+
+    def is_full(self) -> bool:
+        return all(self.table)
