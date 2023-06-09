@@ -9,12 +9,13 @@ from static.environment import notes_list
 
 class Truck:
 
-    def __init__(self, truck_number: int):
+    # Each truck
+    def __init__(self, truck_number: int, departure_hour: int = 8, departure_minute: int = 0):
         self.truck_number = truck_number
         self.payload: list[Package] = list()
-        self.route_number: int = 1
         self.total_distance: float = 0
-        self.time_elapsed: timedelta = timedelta()
+        self.departure_time: timedelta = timedelta(hours=departure_hour, minutes=departure_minute)
+        self.time_elapsed: timedelta = timedelta(hours=departure_hour, minutes=departure_minute)
 
     def determine_next_delivery(self, current_location: str) -> Package:
         min_distance: float = -1
@@ -57,7 +58,7 @@ class Truck:
                 if truck_number == self.truck_number:
                     return True
             elif notes_list[1].match(package.notes) or notes_list[2].match(package.notes):
-                if self.route_number > 1:
+                if self.time_elapsed >= timedelta(hours=9, minutes=5):
                     return True
             elif notes_list[3].match(package.notes):
                 packages = get_related_packages(package)
@@ -68,6 +69,7 @@ class Truck:
         def load_package(package: Package):
             self.payload.append(package)
             package.set_status()
+            package.set_deliverer(self.truck_number)
             package_table.remove(package.package_id)
 
         def load_related_packages(package: Package) -> Package:
@@ -132,5 +134,4 @@ class Truck:
         self.total_distance += distance
         delivery_time = distance / 18
         self.time_elapsed += timedelta(hours=delivery_time)
-        self.route_number += 1
         return delivered_packages
