@@ -1,4 +1,6 @@
+#!/usr/bin/python3
 # Tyler Gautney #001400532
+
 import argparse
 from datetime import timedelta
 from data import get_packages
@@ -16,7 +18,7 @@ def main():
     # Add an optional argument that allows a user to enter a time. This is not required.
     parser.add_argument('--time', type=str, help='Enter a time in 24-hour format (HH:MM)')
     # Add an optional argument that allows a user to enter one or more package id numbers. This is not required.
-    parser.add_argument('--package-ids',type=int, nargs='+',
+    parser.add_argument('--package-ids', type=int, nargs='+',
                         help='Enter at least one package ID number. This argument requires a time to be entered.\n'
                              'More arguments can be passed in as a space delimited list of integers.')
 
@@ -64,10 +66,9 @@ def main():
     # Therefore, an argument that is not in the Namespace is None, so the check looks as follows.
     # Comments are written out beside to translate the if-statement to a more human-readable logic.
     if args.time is None and args.package_ids is not None:  # !time && package_id
-        parser.error('The --package_ids argument requires a time to be entered.')
+        parser.error('The --package-ids argument requires a time to be entered.')
     elif args.time is not None and args.package_ids is None:  # time && !package_id
-        for key in range(1, delivered_packages.size+1):
-            package = delivered_packages.search(key)
+        for package in delivered_packages:
             print(package)
             print_delivery_status()
     elif args.time is not None and args.package_ids is not None:  # time && package_id
@@ -76,8 +77,7 @@ def main():
             print(package)
             print_delivery_status()
     elif args.time is None and args.package_ids is None:  # !time && !package_id
-        for key in range(1, delivered_packages.size+1):
-            package = delivered_packages.search(key)
+        for package in delivered_packages:
             print(package)
             print(f"\t\tPackage was delivered at {package.delivery_time} by Truck {package.deliverer}.")
 
