@@ -1,7 +1,9 @@
-#!/usr/bin/python3
 # Tyler Gautney #001400532
+# DO NOT ATTEMPT TO EXECUTE THIS FILE DIRECTLY.
+# NOTHING WILL HAPPEN.
 
 import argparse
+import sys
 from datetime import timedelta
 from data import get_packages
 from Truck import Truck
@@ -13,7 +15,7 @@ def main():
     # Set up the CLI interface using Python's built-in argparse library.
     # https://docs.python.org/3/library/argparse.html
     # First, instantiate the argparse.ArgumentParser with meta-information about the program.
-    parser = argparse.ArgumentParser(prog='WGUPS-DeliveryRoutePlanner',
+    parser = argparse.ArgumentParser(prog='WGUPS-SoftwareDeliverySystem',
                                      description='CLI for the WGUPS Delivery Route Planning System.')
     # Add an optional argument that allows a user to enter a time. This is not required.
     parser.add_argument('--time', type=str, help='Enter a time in 24-hour format (HH:MM)')
@@ -83,14 +85,18 @@ def main():
 
     if args.print_distance_traveled:
         total_distance: float = truck1.total_distance + truck2.total_distance + truck3.total_distance
-        print("\n\n\n" + "-"*75)
-        print(f'Truck 1 traveled a total of {truck1.total_distance:.2f} miles.')
-        print(f'Truck 2 traveled a total of {truck2.total_distance:.2f} miles.')
-        print(f'Truck 3 traveled a total of {truck3.total_distance:.2f} miles.')
-        print(f'The combined total distance of all trucks is {total_distance:.2f}')
-        print('-'*75)
+        print("\n\n\n\t" + "-"*75)
+        print(f'\tTruck 1 traveled a total of {truck1.total_distance:.2f} miles.')
+        print(f'\tTruck 2 traveled a total of {truck2.total_distance:.2f} miles.')
+        print(f'\tTruck 3 traveled a total of {truck3.total_distance:.2f} miles.')
+        print(f'\tThe combined total distance of all trucks is {total_distance:.2f}')
+        print('\t'+'-'*75)
 
 
 # Ensure that this file is being run directly by the user.
 if __name__ == '__main__':
-    main()
+    print("Please execute this script as a Python package rather than main.py as a standalone file.", file=sys.stderr)
+    print("This means you must pass in the directory containing this file as an argument to the interpreter;\n"
+          "rather than the file itself.", file=sys.stderr)
+    print("This does not necessarily mean that you pass in the name of the directory containing this file.\n"
+          "It depends upon your current working directory. Ideally, execute it one directory up.", file=sys.stderr)
