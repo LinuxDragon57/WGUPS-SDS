@@ -68,7 +68,10 @@ def main():
     # Therefore, an argument that is not in the Namespace is None, so the check looks as follows.
     # Comments are written out beside to translate the if-statement to a more human-readable logic.
     if args.time is None and args.package_ids is not None:  # !time && package_id
-        parser.error('The --package-ids argument requires a time to be entered.')
+        for package_id in args.package_ids:
+            package = delivered_packages.search(package_id)
+            print(package)
+            print(f"\t\tPackage was delivered at {package.delivery_time} by Truck {package.deliverer}.")
     elif args.time is not None and args.package_ids is None:  # time && !package_id
         for package in delivered_packages:
             print(package)
