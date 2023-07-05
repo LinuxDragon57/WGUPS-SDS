@@ -32,6 +32,12 @@ def main():
     undelivered_packages: HashTable = get_packages()
     delivered_packages: HashTable = HashTable()
 
+    # Fix the address on package 9
+    package9 = undelivered_packages.pop(9)
+    package9.address = '410 S State St'
+    package9.zip_code = 84111
+    undelivered_packages.insert(package9)
+
     # Create 3 Trucks with their respective truck number.
     # Truck 2 will depart late in order to wait on late packages.
     truck1: Truck = Truck(1)

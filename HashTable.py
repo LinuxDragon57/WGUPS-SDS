@@ -41,6 +41,16 @@ class HashTable:
             if hash(item) == key:
                 bucket_list.remove(item)
 
+    # The pop method works like the remove method, except it also returns
+    # the item it removes from the bucket within the hash table.
+    def pop(self, key: int):
+        bucket = key - 1
+        bucket_list = self.table[bucket]
+        for item in bucket_list:
+            if hash(item) == key:
+                bucket_list.remove(item)
+                return item
+
     # Returns true if all the buckets
     # within the hash table are empty.
     def is_empty(self) -> bool:
